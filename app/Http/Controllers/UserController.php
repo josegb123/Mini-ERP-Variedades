@@ -33,7 +33,7 @@ class UserController extends Controller
             ->withQueryString();
 
         // 4. Devolvemos a Vue a través de Inertia
-        return Inertia::render('admin/users/Index', [
+        return Inertia::render('admin/users/IndexUsers', [
             'users' => $users,
             'filters' => $request->only(['search']), // Para mantener el texto en el input del front
         ]);
