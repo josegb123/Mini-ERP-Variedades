@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
@@ -96,8 +97,32 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function destroy(string $id)
     {
-        //
+        $user = User::findOrFail($id);
+        //  Impedir que el usuario se elimine a sí mismo
+        if (auth()->user()->id === $user->id) {
+            return Inertia::flash(
+                [
+                    'message' => 'No se puede borrar el usuario activo',
+                    'status' => 'fail',
+                ]
+            )
+                ->back();
+        }
+        try {
+            $user->delete();
+            return Inertia::flash([
+                'message' => '¡Usuario borrado con éxito!',
+                'status' => 'success',
+            ])
+                ->back();
+        } catch (\Throwable $th) {
+            return Inertia::flash([
+                'message' => 'Fallo al borrar al usuario',
+                'status' => 'fail',
+            ])
+                ->back();
+        }
     }
 }

@@ -17,7 +17,12 @@ Route::get('dashboard', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     # Rutas del modulo de usuarios
-    Route::resource('/users', UserController::class);
+    Route::resource('/users', UserController::class)->names([
+        'index' => 'users.index',
+        'show' => 'users.show',
+        'store' => 'users.new',
+        'destroy' => 'users.delete'
+    ]);
 
 });
 

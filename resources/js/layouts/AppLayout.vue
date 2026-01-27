@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { Toaster } from '@/components/ui/sonner';
 import AppLayout from '@/layouts/app/AppSidebarLayout.vue';
+import 'vue-sonner/style.css';
 import type { BreadcrumbItem } from '@/types';
 
 type Props = {
@@ -15,4 +17,5 @@ withDefaults(defineProps<Props>(), {
     <AppLayout :breadcrumbs="breadcrumbs">
         <slot />
     </AppLayout>
+    <Toaster />
 </template>
