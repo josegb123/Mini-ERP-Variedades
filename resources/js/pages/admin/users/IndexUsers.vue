@@ -24,12 +24,17 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Usuarios', href: '/users' }];
             <CustomTable :columns="USER_COLUMNS" :data="users">
                 <template #actions="{ item }">
                     <div class="flex gap-2">
-                        <Button variant="outline" @click="editItem(item.id)">
+                        <Button
+                            variant="outline"
+                            @click="editItem(item.id)"
+                            class="cursor-pointer"
+                        >
                             Editar
                         </Button>
                         <Button
                             variant="destructive"
                             @click="deleteItem(item.id, item.name)"
+                            class="cursor-pointer"
                         >
                             Borrar
                         </Button>

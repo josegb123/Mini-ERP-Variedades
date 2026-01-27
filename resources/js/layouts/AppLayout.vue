@@ -17,5 +17,14 @@ withDefaults(defineProps<Props>(), {
     <AppLayout :breadcrumbs="breadcrumbs">
         <slot />
     </AppLayout>
-    <Toaster />
+    <Toaster
+        :toast-options="{
+            style: {
+                background: '#1f2937',
+                color: '#f9fafb',
+                border: '1px solid #374151',
+            },
+            class: 'my-custom-toast',
+        }"
+    />
 </template>

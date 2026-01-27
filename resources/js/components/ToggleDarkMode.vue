@@ -19,7 +19,11 @@ const toggleTheme = () => {
 <template>
     <SidebarMenu>
         <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Cambiar tema" @click="toggleTheme">
+            <SidebarMenuButton
+                tooltip="Cambiar tema"
+                @click="toggleTheme"
+                class="cursor-pointer"
+            >
                 <Sun v-if="isDark" class="h-5 w-5" />
                 <Moon v-else class="h-5 w-5" />
 
