@@ -52,4 +52,21 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+
+    /** 
+     * Funcion auxiliar de busqueda con filtros 
+     *
+     * @param mixed  $query    Text for search in columns
+     * @param string $filters  String for search the search param
+     *                         in the request
+     */
+    public function scopeFilter($query, array $filters)
+    {
+        $query->when($filters['search'] ?? null, function ($q, $search) {
+            $q->where(function ($inner) use ($search) {
+                $inner->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        });
+    }
 }

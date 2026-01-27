@@ -15,28 +15,13 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        // 1. Iniciamos la query (sin ejecutarla aún)
-        $query = User::query();
-
-        // 2. Aplicamos filtro de búsqueda si existe el parámetro
-        // Usamos 'when' para mantener el código limpio y 'where/orWhere' agrupados
-        $query->when($request->input('search'), function ($q, $search) {
-            $q->where(function ($innerQuery) use ($search) {
-                $innerQuery->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            });
-        });
-
-        // 3. Paginar resultados (Indispensable para un ERP)
-        // Usamos 'withQueryString' para que el filtro 'search' persista al cambiar de página
-        $users = $query->latest()
-            ->paginate(10)
-            ->withQueryString();
-
-        // 4. Devolvemos a Vue a través de Inertia
         return Inertia::render('admin/users/IndexUsers', [
-            'users' => $users,
-            'filters' => $request->only(['search']), // Para mantener el texto en el input del front
+            'users' => User::query()
+                ->filter($request->only(['search']))
+                ->latest()
+                ->paginate(10)
+                ->withQueryString(),
+            'filters' => $request->only(['search']),
         ]);
     }
 
