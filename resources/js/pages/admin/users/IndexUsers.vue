@@ -2,10 +2,9 @@
 import { Head } from '@inertiajs/vue3';
 import CustomTable from '@/components/CustomTable.vue';
 import SearchInput from '@/components/SearchInput.vue';
-import Button from '@/components/ui/button/Button.vue';
+import UserDeleteDialog from '@/components/users/UserDeleteDialog.vue';
 import UserEditDialog from '@/components/users/UserEditDialog.vue';
 import UserFormDialog from '@/components/users/UserFormDialog.vue';
-import { useTableActions } from '@/composables/actions/useTableActions';
 import { useFlashMessages } from '@/composables/useFlashMessages';
 import { useSearch } from '@/composables/useSearch';
 import { USER_COLUMNS } from '@/config/userColumns';
@@ -21,8 +20,6 @@ const props = defineProps<{
 
 const { search } = useSearch('/users', props.filters.search);
 
-const { deleteItem } = useTableActions('users');
-
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Usuarios', href: '/users' }];
 </script>
 
@@ -37,14 +34,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Usuarios', href: '/users' }];
             <template #actions="{ item }">
                 <div class="flex gap-2">
                     <UserEditDialog :user="item" />
-
-                    <Button
-                        variant="destructive"
-                        @click="deleteItem(item.id, item.name)"
-                        class="cursor-pointer"
-                    >
-                        Borrar
-                    </Button>
+                    <UserDeleteDialog :user="item" />
                 </div>
             </template>
         </CustomTable>
