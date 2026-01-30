@@ -6,6 +6,7 @@ use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
 class UserController extends Controller
@@ -38,21 +39,27 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        // 1. Definimos y ejecutamos la validación
         $rules = [
-            "name" => "string|max:255",
-            "email" => "email|max:255|unique:users",
-            "password" => "string|max:255|min:6"
+            "name" => "required|string|max:255",
+            "email" => "required|email|max:255|unique:users,email",
+            "password" => "required|string|max:255|min:6|confirmed"
         ];
 
-        $request->validate($rules);
+        // Si esto falla, Laravel redirige automáticamente atrás 
+        // y llena el objeto 'form.errors' en tu componente Vue.
+        $validated = $request->validate($rules);
 
-        $user = User::create([
-            "name" => $request->get('name'),
-            "email" => $request->get('email'),
-            "password" => Hash::make($request->get('passoword')),
+        // 2. Creamos el usuario
+        User::create([
+            "name" => $validated['name'],
+            "email" => $validated['email'],
+            "password" => Hash::make($validated['password']),
         ]);
 
-        dd($user);
+        // 3. Redirigimos con un mensaje Flash
+        // Este 'message' es el que recibirá tu componente en 'page.props.flash.message'
+        return Inertia::back()->with('message', '¡Usuario creado exitosamente!');
     }
 
     /**
