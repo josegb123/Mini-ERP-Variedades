@@ -9,7 +9,7 @@ const emit = defineEmits(['update:modelValue']);
 </script>
 
 <template>
-    <div class="relative w-full max-w-sm">
+    <div class="relative w-full">
         <Search
             class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
         />
@@ -23,7 +23,7 @@ const emit = defineEmits(['update:modelValue']);
             "
             type="text"
             placeholder="Buscar..."
-            class="h-10 w-full rounded-md border border-input bg-background pr-4 pl-10 text-sm transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            class="h-10 w-full rounded-md border border-input bg-background pr-4 pl-10 text-sm outline transition-all focus-visible:ring-2 focus-visible:ring-ring"
         />
     </div>
 </template>
