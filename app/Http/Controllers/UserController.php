@@ -52,7 +52,7 @@ class UserController extends Controller
             "password" => Hash::make($validated['password']),
         ]);
 
-        return Inertia::back()->with('message', '¡Usuario creado exitosamente!');
+        return redirect()->back();
     }
 
     /**
@@ -76,7 +76,27 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        //
+        $rules = [
+            "name" => "required|string|max:255",
+            "email" => "required|email|max:255|unique:users,email," . $user->id, //Manera facil de ignorar un el usuario actual
+            "password" => "nullable|string|min:6|confirmed",
+        ];
+
+        $validated = $request->validate($rules);
+
+        $data = [
+            "name" => $validated['name'],
+            "email" => $validated['email'],
+        ];
+
+        // Solo actualizamos el password si el usuario escribió uno nuevo
+        if (!empty($validated['password'])) {
+            $data['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($data);
+
+        return redirect()->back();
     }
 
     /**

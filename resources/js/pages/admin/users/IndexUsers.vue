@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/vue3';
 import CustomTable from '@/components/CustomTable.vue';
 import SearchInput from '@/components/SearchInput.vue';
 import Button from '@/components/ui/button/Button.vue';
+import UserEditDialog from '@/components/users/UserEditDialog.vue';
 import UserFormDialog from '@/components/users/UserFormDialog.vue';
 import { useTableActions } from '@/composables/actions/useTableActions';
 import { useFlashMessages } from '@/composables/useFlashMessages';
@@ -20,7 +21,7 @@ const props = defineProps<{
 
 const { search } = useSearch('/users', props.filters.search);
 
-const { deleteItem, editItem } = useTableActions('users');
+const { deleteItem } = useTableActions('users');
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Usuarios', href: '/users' }];
 </script>
@@ -30,19 +31,13 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Usuarios', href: '/users' }];
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex w-full items-center gap-3 py-3">
             <SearchInput v-model="search" />
-
             <UserFormDialog />
         </div>
         <CustomTable :columns="USER_COLUMNS" :data="users">
             <template #actions="{ item }">
                 <div class="flex gap-2">
-                    <Button
-                        variant="outline"
-                        @click="editItem(item.id)"
-                        class="cursor-pointer"
-                    >
-                        Editar
-                    </Button>
+                    <UserEditDialog :user="item" />
+
                     <Button
                         variant="destructive"
                         @click="deleteItem(item.id, item.name)"
