@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import { Trash } from 'lucide-vue-next';
+import { Trash, Eye, EyeOff } from 'lucide-vue-next'; // Nuevos iconos
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import { store } from '@/actions/App/Http/Controllers/UserController';
@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const isOpen = ref(false);
+const showPassword = ref(false);
 
 const form = useForm({
     name: '',
@@ -25,8 +26,9 @@ const form = useForm({
     password_confirmation: '',
 });
 
+const inputClass = 'border-slate-400 focus-visible:ring-slate-500';
+
 const passwordsMatch = computed(() => {
-    // Si ambos campos están vacíos, no mostramos error aún
     if (!form.password && !form.password_confirmation) return true;
     return form.password === form.password_confirmation;
 });
@@ -37,13 +39,12 @@ const clearForm = () => {
 };
 
 const submit = () => {
-    // Bloqueo de seguridad extra en el submit
     if (!passwordsMatch.value) return;
 
     form.submit(store(), {
         onSuccess: () => {
             isOpen.value = false;
-            toast.success('Usuario creado');
+            toast.success(`¡Usuario "${form.name}" creado exitosamente!`);
             form.reset();
         },
         onError: () => {
@@ -66,12 +67,12 @@ const submit = () => {
 
         <DialogContent class="gap-6 sm:max-w-106.25">
             <DialogHeader>
-                <DialogTitle class="text-xl font-semibold tracking-tight">
-                    Crear Nuevo Usuario
-                </DialogTitle>
+                <DialogTitle class="text-xl font-semibold tracking-tight"
+                    >Crear Nuevo Usuario</DialogTitle
+                >
                 <DialogDescription class="text-muted-foreground">
-                    Completa los campos. Asegúrate de que las contraseñas
-                    coincidan.
+                    Completa los campos. La visibilidad de la contraseña es
+                    compartida.
                 </DialogDescription>
             </DialogHeader>
 
@@ -87,7 +88,10 @@ const submit = () => {
                         v-model="form.name"
                         placeholder="Ej. John Doe"
                         autocomplete="name"
-                        :class="{ 'border-destructive': form.errors.name }"
+                        :class="[
+                            inputClass,
+                            { 'border-destructive': form.errors.name },
+                        ]"
                     />
                     <p
                         v-if="form.errors.name"
@@ -109,7 +113,10 @@ const submit = () => {
                         v-model="form.email"
                         placeholder="john@example.com"
                         autocomplete="email"
-                        :class="{ 'border-destructive': form.errors.email }"
+                        :class="[
+                            inputClass,
+                            { 'border-destructive': form.errors.email },
+                        ]"
                     />
                     <p
                         v-if="form.errors.email"
@@ -119,24 +126,47 @@ const submit = () => {
                     </p>
                 </div>
 
-                <Label
-                    for="password"
-                    :class="{ 'text-destructive': form.errors.password }"
-                    >Contraseña</Label
-                >
-                <Input
-                    id="password"
-                    type="password"
-                    v-model="form.password"
-                    placeholder="••••••••"
-                    :class="{ 'border-destructive': form.errors.password }"
-                />
-                <p
-                    v-if="form.errors.password"
-                    class="text-xs font-medium text-destructive"
-                >
-                    {{ form.errors.password }}
-                </p>
+                <div class="grid gap-2">
+                    <div class="flex items-center justify-between">
+                        <Label
+                            for="password"
+                            :class="{
+                                'text-destructive': form.errors.password,
+                            }"
+                            >Contraseña</Label
+                        >
+                        <button
+                            type="button"
+                            @click="showPassword = !showPassword"
+                            class="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-primary"
+                        >
+                            <component
+                                :is="showPassword ? EyeOff : Eye"
+                                class="h-3.5 w-3.5"
+                            />
+                            {{ showPassword ? 'Ocultar' : 'Mostrar' }}
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <Input
+                            id="password"
+                            :type="showPassword ? 'text' : 'password'"
+                            v-model="form.password"
+                            placeholder="••••••••"
+                            autocomplete="new-password"
+                            :class="[
+                                inputClass,
+                                { 'border-destructive': form.errors.password },
+                            ]"
+                        />
+                    </div>
+                    <p
+                        v-if="form.errors.password"
+                        class="text-xs font-medium text-destructive"
+                    >
+                        {{ form.errors.password }}
+                    </p>
+                </div>
 
                 <div class="grid gap-2">
                     <Label
@@ -147,10 +177,14 @@ const submit = () => {
                     </Label>
                     <Input
                         id="password_confirmation"
-                        type="password"
+                        :type="showPassword ? 'text' : 'password'"
                         v-model="form.password_confirmation"
                         placeholder="••••••••"
-                        :class="{ 'border-destructive': !passwordsMatch }"
+                        autocomplete="new-password"
+                        :class="[
+                            inputClass,
+                            { 'border-destructive': !passwordsMatch },
+                        ]"
                     />
                     <Transition name="fade">
                         <p
@@ -169,9 +203,9 @@ const submit = () => {
                         type="button"
                         variant="destructive"
                         @click="clearForm"
-                        class="w-full sm:me-auto sm:w-auto"
+                        class="w-full cursor-pointer transition-all hover:brightness-90 sm:me-auto sm:w-auto"
                     >
-                        <Trash />
+                        <Trash class="mr-2 h-4 w-4" />
                         Limpiar
                     </Button>
 
@@ -180,7 +214,7 @@ const submit = () => {
                             type="button"
                             variant="outline"
                             @click="isOpen = false"
-                            class="flex-1 sm:flex-none"
+                            class="flex-1 cursor-pointer border-slate-400 hover:brightness-75 sm:flex-none"
                         >
                             Cancelar
                         </Button>
@@ -192,7 +226,7 @@ const submit = () => {
                                 !passwordsMatch ||
                                 !form.password
                             "
-                            class="min-w-25 flex-1 sm:flex-none"
+                            class="min-w-25 flex-1 cursor-pointer sm:flex-none"
                         >
                             <span
                                 v-if="form.processing"
