@@ -10,21 +10,21 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
-import { request } from '@/routes/password';
 
 defineProps<{
     status?: string;
-    canResetPassword: boolean;
     canRegister: boolean;
 }>();
+
+const inputClass = 'border-slate-400 focus-visible:ring-slate-500';
 </script>
 
 <template>
     <AuthBase
-        title="Log in to your account"
-        description="Enter your email and password below to log in"
+        title="Iniciar sesión"
+        description="Ingresa tu correo y contraseña para acceder al sistema"
     >
-        <Head title="Log in" />
+        <Head title="Iniciar sesión" />
 
         <div
             v-if="status"
@@ -41,60 +41,67 @@ defineProps<{
         >
             <div class="grid gap-6">
                 <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
+                    <Label for="email">Correo electrónico</Label>
                     <Input
                         id="email"
                         type="email"
                         name="email"
+                        :class="inputClass"
                         required
                         autofocus
                         :tabindex="1"
                         autocomplete="email"
-                        placeholder="email@example.com"
+                        placeholder="correo@ejemplo.com"
                     />
                     <InputError :message="errors.email" />
                 </div>
 
                 <div class="grid gap-2">
                     <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
-                        <TextLink
-                            v-if="canResetPassword"
-                            :href="request()"
-                            class="text-sm"
-                            :tabindex="5"
-                        >
-                            Forgot password?
-                        </TextLink>
+                        <Label for="password">Contraseña</Label>
+                        <span class="text-xs text-muted-foreground">
+                            ¿Olvidaste tu acceso? Contacta al admin
+                        </span>
                     </div>
                     <Input
                         id="password"
                         type="password"
                         name="password"
+                        :class="inputClass"
                         required
                         :tabindex="2"
                         autocomplete="current-password"
-                        placeholder="Password"
+                        placeholder="Tu contraseña"
                     />
                     <InputError :message="errors.password" />
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <Label for="remember" class="flex items-center space-x-3">
-                        <Checkbox id="remember" name="remember" :tabindex="3" />
-                        <span>Remember me</span>
+                    <Label
+                        for="remember"
+                        class="flex cursor-pointer items-center space-x-3 text-sm font-medium"
+                    >
+                        <Checkbox
+                            id="remember"
+                            name="remember"
+                            :tabindex="3"
+                            class="border-slate-400"
+                        />
+                        <span>Recordarme en este equipo</span>
                     </Label>
                 </div>
 
                 <Button
                     type="submit"
-                    class="mt-4 w-full"
+                    class="mt-2 w-full cursor-pointer transition-all hover:brightness-90"
                     :tabindex="4"
                     :disabled="processing"
                     data-test="login-button"
                 >
-                    <Spinner v-if="processing" />
-                    Log in
+                    <Spinner v-if="processing" class="mr-2" />
+                    {{
+                        processing ? 'Iniciando sesión...' : 'Entrar al sistema'
+                    }}
                 </Button>
             </div>
 
@@ -102,8 +109,14 @@ defineProps<{
                 class="text-center text-sm text-muted-foreground"
                 v-if="canRegister"
             >
-                Don't have an account?
-                <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
+                ¿No tienes cuenta?
+                <TextLink
+                    :href="register()"
+                    :tabindex="5"
+                    class="font-medium underline underline-offset-4"
+                >
+                    Solicita una aquí
+                </TextLink>
             </div>
         </Form>
     </AuthBase>
