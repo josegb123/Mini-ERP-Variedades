@@ -3,7 +3,9 @@
 namespace App\Concerns;
 
 use App\Models\User;
+use App\Enums\UserRole;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 
 trait ProfileValidationRules
 {
@@ -17,13 +19,12 @@ trait ProfileValidationRules
         return [
             'name' => $this->nameRules(),
             'email' => $this->emailRules($userId),
+            'role' => $this->roleRules(),
         ];
     }
 
     /**
      * Get the validation rules used to validate user names.
-     *
-     * @return array<int, \Illuminate\Contracts\Validation\Rule|array<mixed>|string>
      */
     protected function nameRules(): array
     {
@@ -31,9 +32,15 @@ trait ProfileValidationRules
     }
 
     /**
+     * Get the validation rules used to validate user roles based on Enum.
+     */
+    protected function roleRules(): array
+    {
+        return ['required', new Enum(UserRole::class)];
+    }
+
+    /**
      * Get the validation rules used to validate user emails.
-     *
-     * @return array<int, \Illuminate\Contracts\Validation\Rule|array<mixed>|string>
      */
     protected function emailRules(?string $userId = null): array
     {
@@ -43,8 +50,8 @@ trait ProfileValidationRules
             'email',
             'max:255',
             $userId === null
-                ? Rule::unique(User::class)
-                : Rule::unique(User::class)->ignore($userId),
+            ? Rule::unique(User::class)
+            : Rule::unique(User::class)->ignore($userId),
         ];
     }
 }
