@@ -7,25 +7,20 @@ import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editProfile } from '@/routes/profile';
-import { show } from '@/routes/two-factor';
 import { edit as editPassword } from '@/routes/user-password';
 import { type NavItem } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Profile',
+        title: 'Perfil',
         href: editProfile(),
     },
     {
-        title: 'Password',
+        title: 'Contraseña',
         href: editPassword(),
     },
     {
-        title: 'Two-Factor Auth',
-        href: show(),
-    },
-    {
-        title: 'Appearance',
+        title: 'Apariencia',
         href: editAppearance(),
     },
 ];
@@ -36,28 +31,36 @@ const { isCurrentUrl } = useCurrentUrl();
 <template>
     <div class="px-4 py-6">
         <Heading
-            title="Settings"
-            description="Manage your profile and account settings"
+            title="Configuración"
+            description="Administra tu perfil y los ajustes de tu cuenta"
         />
 
-        <div class="flex flex-col lg:flex-row lg:space-x-12">
+        <div class="mt-6 flex flex-col lg:flex-row lg:space-x-12">
             <aside class="w-full max-w-xl lg:w-48">
                 <nav
                     class="flex flex-col space-y-1 space-x-0"
-                    aria-label="Settings"
+                    aria-label="Navegación de ajustes"
                 >
                     <Button
                         v-for="item in sidebarNavItems"
                         :key="toUrl(item.href)"
                         variant="ghost"
                         :class="[
-                            'w-full justify-start',
-                            { 'bg-muted': isCurrentUrl(item.href) },
+                            'w-full cursor-pointer justify-start transition-all hover:brightness-90',
+                            {
+                                'bg-muted font-semibold': isCurrentUrl(
+                                    item.href,
+                                ),
+                            },
                         ]"
                         as-child
                     >
                         <Link :href="item.href">
-                            <component :is="item.icon" class="h-4 w-4" />
+                            <component
+                                :is="item.icon"
+                                v-if="item.icon"
+                                class="mr-2 h-4 w-4"
+                            />
                             {{ item.title }}
                         </Link>
                     </Button>
