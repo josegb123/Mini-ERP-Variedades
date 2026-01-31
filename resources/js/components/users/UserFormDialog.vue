@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import SelectUserRole from './SelectUserRole.vue';
 
 const isOpen = ref(false);
 const showPassword = ref(false);
@@ -23,6 +24,7 @@ const form = useForm({
     name: '',
     email: '',
     password: '',
+    role: '',
     password_confirmation: '',
 });
 
@@ -125,6 +127,8 @@ const submit = () => {
                         {{ form.errors.email }}
                     </p>
                 </div>
+
+                <SelectUserRole v-model="form.role" :error="form.errors.role" />
 
                 <div class="grid gap-2">
                     <div class="flex items-center justify-between">

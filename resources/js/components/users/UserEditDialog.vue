@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import SelectUserRole from './SelectUserRole.vue';
 
 const props = defineProps({
     user: {
@@ -35,6 +36,7 @@ const form = useForm({
     name: props.user.name,
     email: props.user.email,
     password: '',
+    role: props.user.role,
     password_confirmation: '',
 });
 
@@ -45,6 +47,7 @@ watch(
     () => props.user,
     (newUser) => {
         form.name = newUser.name;
+        form.role = newUser.role;
         form.email = newUser.email;
     },
     { deep: true },
@@ -146,6 +149,8 @@ const clearErrors = () => {
                         {{ form.errors.email }}
                     </p>
                 </div>
+
+                <SelectUserRole v-model="form.role" :error="form.errors.role" />
 
                 <div class="grid gap-2">
                     <div class="flex items-center justify-between">
