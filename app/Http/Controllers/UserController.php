@@ -3,15 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Enums\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Enum;
 use Inertia\Inertia;
 
+/**
+ * Handles user management including CRUD operations and role assignments.
+ */
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         return Inertia::render('admin/users/IndexUsers', [
@@ -24,110 +26,60 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-
-        $rules = [
+        $validated = $request->validate([
             "name" => "required|string|max:255",
             "email" => "required|email|max:255|unique:users,email",
-            "password" => "required|string|max:255|min:6|confirmed"
-        ];
-
-        $validated = $request->validate($rules);
+            "role" => ["required", new Enum(UserRole::class)],
+            "password" => "required|string|min:6|confirmed"
+        ]);
 
         User::create([
             "name" => $validated['name'],
             "email" => $validated['email'],
+            "role" => $validated['role'],
             "password" => Hash::make($validated['password']),
         ]);
 
         return redirect()->back();
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(User $user)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(User $user)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, User $user)
     {
-        $rules = [
+        $validated = $request->validate([
             "name" => "required|string|max:255",
-            "email" => "required|email|max:255|unique:users,email," . $user->id, //Manera facil de ignorar un el usuario actual
+            "email" => "required|email|max:255|unique:users,email," . $user->id,
+            "role" => ["required", new Enum(UserRole::class)],
             "password" => "nullable|string|min:6|confirmed",
-        ];
+        ]);
 
-        $validated = $request->validate($rules);
-
-        $data = [
+        $user->fill([
             "name" => $validated['name'],
             "email" => $validated['email'],
-        ];
+            "role" => $validated['role'],
+        ]);
 
-        // Solo actualizamos el password si el usuario escribió uno nuevo
         if (!empty($validated['password'])) {
-            $data['password'] = Hash::make($validated['password']);
+            $user->password = Hash::make($validated['password']);
         }
 
-        $user->update($data);
+        $user->save();
 
         return redirect()->back();
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(User $user)
     {
-        $user = User::findOrFail($id);
-        //  Impedir que el usuario se elimine a sí mismo
-        if (auth()->user()->id === $user->id) {
-            return Inertia::flash(
-                [
-                    'message' => 'No se puede borrar el usuario activo',
-                    'status' => 'fail',
-                ]
-            )
-                ->back();
+        if (auth()->id() === $user->id) {
+            return back()->with(['message' => 'No puedes eliminarte a ti mismo', 'status' => 'fail']);
         }
-        try {
-            $user->delete();
-            return Inertia::flash([
-                'message' => '¡Usuario borrado con éxito!',
-                'status' => 'success',
-            ])
-                ->back();
-        } catch (\Throwable $th) {
-            return Inertia::flash([
-                'message' => 'Fallo al borrar al usuario',
-                'status' => 'fail',
-            ])
-                ->back();
-        }
+
+        $user->delete();
+        return back()->with(['message' => 'Usuario eliminado con éxito', 'status' => 'success']);
     }
+
+    // TODO: Implement indexTrashed() for viewing soft-deleted users.
+
+    // TODO: Implement restore() for recovering soft-deleted users.
 }
