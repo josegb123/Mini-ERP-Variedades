@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PermissionEnum;
+use App\Enums\RoleEnum;
 use App\Models\User;
-use App\Enums\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Enum;
@@ -18,10 +19,18 @@ class UserController extends Controller
     {
         return Inertia::render('admin/users/IndexUsers', [
             'users' => User::query()
+                ->with('roles') // Cargamos los roles para mostrarlos en la tabla
                 ->filter($request->only(['search']))
                 ->latest()
                 ->paginate(10)
-                ->withQueryString(),
+                ->withQueryString()
+                ->through(fn($user) => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->getRoleNames()->first(), // Obtenemos el nombre del rol
+                    'created_at' => $user->created_at->format('d/m/Y'),
+                ]),
             'filters' => $request->only(['search']),
         ]);
     }
@@ -31,16 +40,19 @@ class UserController extends Controller
         $validated = $request->validate([
             "name" => "required|string|max:255",
             "email" => "required|email|max:255|unique:users,email",
-            "role" => ["required", new Enum(UserRole::class)],
+            'role' => ['required', new Enum(RoleEnum::class)],
             "password" => "required|string|min:6|confirmed"
         ]);
 
-        User::create([
+        // 1. Creamos el usuario sin la columna 'role'
+        $user = User::create([
             "name" => $validated['name'],
             "email" => $validated['email'],
-            "role" => $validated['role'],
             "password" => Hash::make($validated['password']),
         ]);
+
+        // 2. Asignamos el rol mediante Spatie
+        $user->assignRole($validated['role']);
 
         return redirect()->back();
     }
@@ -50,21 +62,21 @@ class UserController extends Controller
         $validated = $request->validate([
             "name" => "required|string|max:255",
             "email" => "required|email|max:255|unique:users,email," . $user->id,
-            "role" => ["required", new Enum(UserRole::class)],
+            'role' => ['required', new Enum(RoleEnum::class)],
             "password" => "nullable|string|min:6|confirmed",
         ]);
 
-        $user->fill([
+        $user->update([
             "name" => $validated['name'],
             "email" => $validated['email'],
-            "role" => $validated['role'],
         ]);
 
         if (!empty($validated['password'])) {
-            $user->password = Hash::make($validated['password']);
+            $user->update(['password' => Hash::make($validated['password'])]);
         }
 
-        $user->save();
+        // 3. Sincronizamos el rol (esto elimina el anterior y pone el nuevo)
+        $user->syncRoles($validated['role']);
 
         return redirect()->back();
     }
@@ -72,11 +84,18 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         if (auth()->id() === $user->id) {
-            return back()->with(['message' => 'No puedes eliminarte a ti mismo', 'status' => 'fail']);
+            return back()->with([
+                'message' => 'No puedes eliminarte a ti mismo',
+                'status' => 'fail'
+            ]);
         }
 
         $user->delete();
-        return back()->with(['message' => 'Usuario eliminado con éxito', 'status' => 'success']);
+
+        return back()->with([
+            'message' => 'Usuario eliminado con éxito',
+            'status' => 'success'
+        ]);
     }
 
     // TODO: Implement indexTrashed() for viewing soft-deleted users.

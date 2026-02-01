@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\PermissionEnum;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -17,13 +18,23 @@ Route::get('dashboard', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     # Rutas del modulo de usuarios
-    Route::resource('/users', UserController::class)->names([
-        'index' => 'users.index',
-        'show' => 'users.show',
-        'store' => 'users.new',
-        'destroy' => 'users.delete'
-    ]);
+    Route::group(['prefix' => 'users'], function () {
+        Route::get('/', [UserController::class, 'index'])
+            ->middleware('permission:' . PermissionEnum::USER_READ->value)
+            ->name('users.index');
 
+        Route::post('/', [UserController::class, 'store'])
+            ->middleware('permission:' . PermissionEnum::USER_CREATE->value)
+            ->name('users.store');
+
+        Route::put('/{user}', [UserController::class, 'update'])
+            ->middleware('permission:' . PermissionEnum::USER_UPDATE->value)
+            ->name('users.update');
+
+        Route::delete('/{user}', [UserController::class, 'destroy'])
+            ->middleware('permission:' . PermissionEnum::USER_DELETE->value)
+            ->name('users.destroy');
+    });
 });
 
 require __DIR__ . '/settings.php';
