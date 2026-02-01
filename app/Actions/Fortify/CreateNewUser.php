@@ -2,6 +2,7 @@
 
 namespace App\Actions\Fortify;
 
+use App\Enums\RoleEnum;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use App\Models\User;
@@ -13,22 +14,23 @@ class CreateNewUser implements CreatesNewUsers
     use PasswordValidationRules, ProfileValidationRules;
 
     /**
-     * Validate and create a newly registered user.
-     *
-     * @param  array<string, string>  $input
+     * Valida y crea un nuevo usuario registrado.
      */
     public function create(array $input): User
     {
         Validator::make($input, [
             ...$this->profileRules(),
             'password' => $this->passwordRules(),
+            'role' => ['required', new \Illuminate\Validation\Rules\Enum(RoleEnum::class)],
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
-            'role' => $input['role'],
             'password' => $input['password'],
         ]);
+
+        $user->assignRole($input['role']);
+        return $user;
     }
 }

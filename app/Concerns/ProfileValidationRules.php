@@ -2,46 +2,47 @@
 
 namespace App\Concerns;
 
+use App\Enums\RoleEnum;
 use App\Models\User;
-use App\Enums\UserRole;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 trait ProfileValidationRules
 {
     /**
-     * Get the validation rules used to validate user profiles.
-     *
-     * @return array<string, array<int, \Illuminate\Contracts\Validation\Rule|array<mixed>|string>>
+     * Obtiene las reglas de validación para el perfil.
+     * * @param string|null $userId ID del usuario para ignorar en el unique.
+     * @param bool $includeRole Si se debe validar el campo de rol.
      */
-    protected function profileRules(?string $userId = null): array
+    protected function profileRules(?string $userId = null, bool $includeRole = true): array
     {
-        return [
+        $rules = [
             'name' => $this->nameRules(),
             'email' => $this->emailRules($userId),
-            'role' => $this->roleRules(),
         ];
+
+        // Solo agregamos el rol si es explícitamente requerido
+        if ($includeRole) {
+            $rules['role'] = $this->roleRules();
+        }
+
+        return $rules;
     }
 
-    /**
-     * Get the validation rules used to validate user names.
-     */
     protected function nameRules(): array
     {
         return ['required', 'string', 'max:255'];
     }
 
     /**
-     * Get the validation rules used to validate user roles based on Enum.
+     * Validación de rol: 'sometimes' permite que el campo sea opcional
+     * si no viene en la petición.
      */
     protected function roleRules(): array
     {
-        return ['required', new Enum(UserRole::class)];
+        return ['sometimes', 'required', new Enum(RoleEnum::class)];
     }
 
-    /**
-     * Get the validation rules used to validate user emails.
-     */
     protected function emailRules(?string $userId = null): array
     {
         return [

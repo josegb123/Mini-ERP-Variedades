@@ -109,7 +109,7 @@ const roles = computed(
                         :tabindex="4"
                         autocomplete="new-password"
                         name="password"
-                        placeholder="Mínimo 6 caracteres"
+                        placeholder="Mínimo 8 caracteres"
                         class="border-slate-400"
                     />
                     <InputError :message="errors.password" />
