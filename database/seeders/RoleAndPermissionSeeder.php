@@ -1,42 +1,42 @@
 <?php
-
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Enums\RoleEnum;
+use App\Enums\PermissionEnum;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RoleAndPermissionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        Permission::create(['name' => 'create-users']);
-        Permission::create(['name' => 'edit-users']);
-        Permission::create(['name' => 'delete-users']);
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        Permission::create(['name' => 'make-orders']);
-        Permission::create(['name' => 'view-debts']);
-        Permission::create(['name' => 'manage-financial']);
+        // Crear todos los permisos definidos en el Enum
+        foreach (PermissionEnum::cases() as $permission) {
+            Permission::findOrCreate($permission->value);
+        }
 
-        $adminRole = Role::create(['name' => 'Administrador']);
-        $sellerRole = Role::create(['name' => 'Vendedor']);
+        // Configurar Rol ADMIN (Todo)
+        Role::findOrCreate(RoleEnum::ADMIN->value)
+            ->syncPermissions(PermissionEnum::cases());
 
-        $adminRole->givePermissionTo([
-            'create-users',
-            'edit-users',
-            'delete-users',
-            'make-orders',
-            'view-debts',
-            'manage-financial',
-        ]);
+        // Configurar Rol VENDEDOR (Productos + Ver Usuarios)
+        Role::findOrCreate(RoleEnum::VENDEDOR->value)
+            ->syncPermissions([
+                PermissionEnum::PRODUCT_CREATE,
+                PermissionEnum::PRODUCT_READ,
+                PermissionEnum::PRODUCT_UPDATE,
+                PermissionEnum::PRODUCT_DELETE,
+                PermissionEnum::USER_READ,
+            ]);
 
-        $sellerRole->givePermissionTo([
-            'make-orders',
-            'view-debts',
-        ]);
+        // Configurar Rol ESTANDAR (Solo Lectura)
+        Role::findOrCreate(RoleEnum::ESTANDAR->value)
+            ->syncPermissions([
+                PermissionEnum::USER_READ,
+                PermissionEnum::PRODUCT_READ,
+            ]);
     }
 }
